@@ -37,8 +37,8 @@ func RsaEncrypt(plainText string) ([]byte, error) {
 	return cipherText, err
 }
 
-func RsaDecrypt(cipherText string) ([]byte, error) {
-	plainText, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, PrivateKeys, []byte(cipherText), nil)
+func RsaDecrypt(cipherText []byte) ([]byte, error) {
+	plainText, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, PrivateKeys, cipherText, nil)
 	return plainText, err
 }
 

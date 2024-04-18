@@ -2,15 +2,17 @@ package Handler
 
 import (
 	"RsaOracle/RsaCrypt"
+	"encoding/hex"
 	"fmt"
 	"net"
+	"strings"
 )
 
 func TcpHandle(conn net.Conn) {
 	defer conn.Close()
 	conn.Write([]byte("**** The Rsa Oracle ****\n"))
 	modeInput := make([]byte, 2)
-	textInput := make([]byte, 64)
+	textInput := make([]byte, 1024)
 	for {
 		conn.Write([]byte("E :Encrypt  D :Decrypt Q :Quit\n"))
 		_, err := conn.Read(modeInput)
@@ -38,12 +40,12 @@ func TcpHandle(conn net.Conn) {
 			}
 			plainText := inputToStr(textInput)
 			cipherText, err := RsaCrypt.RsaEncrypt(plainText)
+			outputText := formatCipherText(cipherText)
 			if err != nil {
 				fmt.Println("Error while encrypt", err)
 				continue
 			}
-			fmt.Println(RsaCrypt.RsaDecrypt(string(cipherText)))
-			conn.Write([]byte("PlainText : " + string(plainText) + "\nCipherText : " + string(cipherText) + "\n"))
+			conn.Write([]byte("PlainText : " + string(plainText) + "\nCipherText : " + outputText + "\n"))
 		}
 		if mode == "D" {
 			conn.Write([]byte("Decrypt\nEnter the text your want to decrypt :"))
@@ -53,8 +55,11 @@ func TcpHandle(conn net.Conn) {
 				return
 			}
 			cipherText := inputToStr(textInput)
-			fmt.Println(cipherText)
-			plainText, err := RsaCrypt.RsaDecrypt(cipherText)
+			cipher := decodeCipher(cipherText)
+			if err != nil {
+				fmt.Println("Error while reading")
+			}
+			plainText, err := RsaCrypt.RsaDecrypt(cipher)
 			if err != nil {
 				fmt.Println("Error while decrypt", err)
 				continue
@@ -68,6 +73,23 @@ func TcpHandle(conn net.Conn) {
 	}
 }
 
+func decodeCipher(text string) []byte {
+	var retByte []byte
+	for _, c := range strings.Split(text, "0x") {
+		if c == "0x" {
+			continue
+		}
+		b, err := hex.DecodeString(c)
+		if err != nil {
+			return nil
+		}
+		for _, p := range b {
+			retByte = append(retByte, p)
+		}
+	}
+	return retByte
+}
+
 func inputToStr(text []byte) string {
 	retStr := ""
 	for _, c := range text {
@@ -75,6 +97,14 @@ func inputToStr(text []byte) string {
 			break
 		}
 		retStr += string(rune(c))
+	}
+	return retStr
+}
+
+func formatCipherText(cipherText []byte) string {
+	retStr := ""
+	for _, c := range cipherText {
+		retStr += "0x" + hex.EncodeToString([]byte{c})
 	}
 	return retStr
 }
