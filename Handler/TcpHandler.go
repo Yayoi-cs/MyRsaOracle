@@ -5,12 +5,15 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 )
 
 func TcpHandle(conn net.Conn) {
 	defer conn.Close()
-	conn.Write([]byte("**** The Rsa Oracle ****\n"))
+	estr := strconv.Itoa(RsaCrypt.PrivateKeys.E)
+	nstr := RsaCrypt.PublicKeys.N.String()
+	conn.Write([]byte("**** The Rsa Oracle ****\nHere is public key\nE : " + estr + "\nN : " + nstr + "\n"))
 	modeInput := make([]byte, 2)
 	textInput := make([]byte, 1024)
 	for {
@@ -75,6 +78,13 @@ func TcpHandle(conn net.Conn) {
 
 func decodeCipher(text string) []byte {
 	var retByte []byte
+	retByte, err := hex.DecodeString(text)
+	if err != nil {
+		return nil
+	}
+	return retByte
+
+	//Delete after
 	for _, c := range strings.Split(text, "0x") {
 		if c == "0x" {
 			continue
@@ -102,7 +112,10 @@ func inputToStr(text []byte) string {
 }
 
 func formatCipherText(cipherText []byte) string {
-	retStr := ""
+	retStr := fmt.Sprintf("%x", cipherText)
+	return retStr
+	//Delete after
+	retStr = ""
 	for _, c := range cipherText {
 		retStr += "0x" + hex.EncodeToString([]byte{c})
 	}
