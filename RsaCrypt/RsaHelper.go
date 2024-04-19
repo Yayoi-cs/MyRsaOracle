@@ -1,9 +1,7 @@
 package RsaCrypt
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"math/big"
 )
 
@@ -33,13 +31,20 @@ func generateRSAKey(p, q *big.Int) *rsa.PrivateKey {
 }
 
 func RsaEncrypt(plainText string) ([]byte, error) {
-	cipherText, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, PublicKeys, []byte(plainText), nil)
-	return cipherText, err
+	//cipherText, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, PublicKeys, []byte(plainText), nil)
+	//cipherText, err := rsa.EncryptPKCS1v15(rand.Reader, PublicKeys, []byte(plainText))
+	c := new(big.Int).SetBytes([]byte(plainText))
+	c.Exp(c, big.NewInt(int64(PublicKeys.E)), PublicKeys.N)
+	//return cipherText, err
+	return c.Bytes(), nil
 }
 
 func RsaDecrypt(cipherText []byte) ([]byte, error) {
-	plainText, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, PrivateKeys, cipherText, nil)
-	return plainText, err
+	//plainText, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, PrivateKeys, cipherText, nil)
+	c := new(big.Int).SetBytes([]byte(cipherText))
+	m := new(big.Int).Exp(c, PrivateKeys.D, PrivateKeys.N)
+	return m.Bytes(), nil
+	//return plainText, err
 }
 
 func ModInverseA(a, m *big.Int) *big.Int {

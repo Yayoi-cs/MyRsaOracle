@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"strings"
 )
 
 func TcpHandle(conn net.Conn) {
@@ -84,20 +83,6 @@ func decodeCipher(text string) []byte {
 	}
 	return retByte
 
-	//Delete after
-	for _, c := range strings.Split(text, "0x") {
-		if c == "0x" {
-			continue
-		}
-		b, err := hex.DecodeString(c)
-		if err != nil {
-			return nil
-		}
-		for _, p := range b {
-			retByte = append(retByte, p)
-		}
-	}
-	return retByte
 }
 
 func inputToStr(text []byte) string {
@@ -113,11 +98,5 @@ func inputToStr(text []byte) string {
 
 func formatCipherText(cipherText []byte) string {
 	retStr := fmt.Sprintf("%x", cipherText)
-	return retStr
-	//Delete after
-	retStr = ""
-	for _, c := range cipherText {
-		retStr += "0x" + hex.EncodeToString([]byte{c})
-	}
 	return retStr
 }
