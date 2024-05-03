@@ -5,21 +5,21 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
-	"strconv"
 )
 
 func TcpHandle(conn net.Conn) {
 	defer conn.Close()
-	estr := strconv.Itoa(RsaCrypt.PrivateKeys.E)
-	nstr := RsaCrypt.PublicKeys.N.String()
-	conn.Write([]byte("**** The Rsa Oracle ****\nHere is public key\nE : " + estr + "\nN : " + nstr + "\n"))
+	//estr := strconv.Itoa(RsaCrypt.PrivateKeys.E)
+	//nstr := RsaCrypt.PublicKeys.N.String()
+	//conn.Write([]byte("**** The Rsa Oracle ****\nHere is public key\nE : " + estr + "\nN : " + nstr + "\n"))
+	conn.Write([]byte("**** The Rsa Oracle ****\n"))
 	modeInput := make([]byte, 2)
 	textInput := make([]byte, 1024)
+	conn.Write([]byte("E :Encrypt  D :Decrypt Q :Quit\n"))
 	for {
-		conn.Write([]byte("E :Encrypt  D :Decrypt Q :Quit\n"))
 		_, err := conn.Read(modeInput)
 		if err != nil {
-			fmt.Println("Error while reading")
+			fmt.Println("Error while reading", err)
 			return
 		}
 		mode := ""
@@ -29,7 +29,6 @@ func TcpHandle(conn net.Conn) {
 			}
 			mode += string(rune(c))
 		}
-		fmt.Println(modeInput, mode)
 		if mode != "E" && mode != "D" && mode != "Q" {
 			continue
 		}
@@ -47,7 +46,7 @@ func TcpHandle(conn net.Conn) {
 				fmt.Println("Error while encrypt", err)
 				continue
 			}
-			conn.Write([]byte("PlainText : " + string(plainText) + "\nCipherText : " + outputText + "\n"))
+			conn.Write([]byte("PlainText : " + string(plainText) + "\nCipherText : " + outputText + "\nE :Encrypt  D :Decrypt Q :Quit\n"))
 		}
 		if mode == "D" {
 			conn.Write([]byte("Decrypt\nEnter the text your want to decrypt :"))
@@ -66,7 +65,7 @@ func TcpHandle(conn net.Conn) {
 				fmt.Println("Error while decrypt", err)
 				continue
 			}
-			conn.Write([]byte("CipherText : " + string(cipherText) + "\nPlainText : " + string(plainText) + "\n"))
+			conn.Write([]byte("CipherText : " + string(cipherText) + "\nPlainText : " + string(plainText) + "\nHex : " + fmt.Sprintf("%x", plainText) + "\nE :Encrypt  D :Decrypt Q :Quit\n"))
 		}
 		if mode == "Q" {
 			conn.Write([]byte("Quit\n"))
@@ -77,6 +76,9 @@ func TcpHandle(conn net.Conn) {
 
 func decodeCipher(text string) []byte {
 	var retByte []byte
+	if len(text)%2 == 1 {
+		text = "0" + text
+	}
 	retByte, err := hex.DecodeString(text)
 	if err != nil {
 		return nil

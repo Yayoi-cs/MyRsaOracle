@@ -31,52 +31,13 @@ func generateRSAKey(p, q *big.Int) *rsa.PrivateKey {
 }
 
 func RsaEncrypt(plainText string) ([]byte, error) {
-	//cipherText, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, PublicKeys, []byte(plainText), nil)
-	//cipherText, err := rsa.EncryptPKCS1v15(rand.Reader, PublicKeys, []byte(plainText))
 	c := new(big.Int).SetBytes([]byte(plainText))
 	c.Exp(c, big.NewInt(int64(PublicKeys.E)), PublicKeys.N)
-	//return cipherText, err
 	return c.Bytes(), nil
 }
 
 func RsaDecrypt(cipherText []byte) ([]byte, error) {
-	//plainText, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, PrivateKeys, cipherText, nil)
 	c := new(big.Int).SetBytes([]byte(cipherText))
 	m := new(big.Int).Exp(c, PrivateKeys.D, PrivateKeys.N)
 	return m.Bytes(), nil
-	//return plainText, err
-}
-
-func ModInverseA(a, m *big.Int) *big.Int {
-	g := new(big.Int).Set(a)
-	x := new(big.Int)
-	y := new(big.Int).Set(m)
-	u := big.NewInt(1)
-	v := big.NewInt(0)
-
-	for g.Cmp(big.NewInt(0)) != 0 {
-		q := new(big.Int)
-		q.Div(y, g)
-
-		t := new(big.Int)
-		t.Set(g)
-		g.Mod(y, g)
-		y.Set(t)
-
-		t.Set(x)
-		t.Mul(q, x)
-		t2 := new(big.Int)
-		t2.Set(u)
-		u.Sub(u, t2)
-		u.Mul(u, q)
-		x.Set(v)
-		x.Add(x, u)
-		u.Set(t)
-		v.Set(t2)
-	}
-
-	result := new(big.Int).Add(x, m)
-	result.Mod(result, m)
-
-	return result
 }

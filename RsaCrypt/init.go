@@ -14,10 +14,6 @@ var (
 )
 
 func RsaInit() {
-	/*p := big.NewInt(103289)
-	q := big.NewInt(103841)
-	PrivateKeys = generateRSAKey(p, q)
-	PublicKeys = &PrivateKeys.PublicKey*/
 	privateKeyPEM, err := ioutil.ReadFile("private_key.pem")
 	if err != nil {
 		fmt.Println("Error reading private key file:", err)
@@ -65,7 +61,4 @@ func RsaInit() {
 		fmt.Println("Public key is not an RSA key")
 		return
 	}
-
-	//fmt.Println("Private Key:", PrivateKeys)
-	//fmt.Println("Public Key:", PublicKeys)
 }
